@@ -25,7 +25,7 @@ ii) genereate_next_block:
           height
           difficulty
 
-iii) stringify_block_header:
+iii)_get_block_header:
     Return stringified block header
     Args: self
     Return -> str
@@ -43,5 +43,28 @@ v) is_valid_hash:
     Args: hash_string
     Return: True/False 
 
-vi) is_valid_block_structure
+vi) _stringify
+    Json stringify complete block 
 
+vii) _get_block
+    Return dict of complete block
+
+Class : Blockchain
+    self.chain = []
+    store blocks as dicts in hash
+
+i) _is_valid_block_structure
+    Check types of variables in block 
+    Args: instance of Block 
+    Returns: Boolean
+    
+ii) _is_valid_block
+    Check whether height and hash are consistent with previous back
+    calls _is_valid_block_hash and _is_valid_block_structure
+    Args: instance of current block, dict of best block in chain 
+    Returns: boolean
+
+iii) _is_valid_block_hash
+    Check whether block_hash received is consistent with block (content + difficulty)
+    Args: instance of current block
+    Returns: Boolean      
