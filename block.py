@@ -23,6 +23,8 @@ class Block:
         self.previous_hash = previous_hash
         self.height = 0
         self.difficulty = difficulty
+        self.block_hash = self.calculate_hash()
+        self._mine_block()
 
     def _get_block_header(self):
         block_header_json = {

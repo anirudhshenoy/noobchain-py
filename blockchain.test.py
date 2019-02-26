@@ -1,13 +1,12 @@
 import unittest
 from block import Block
+from blockchain import Blockchain
 
 
 class BlockTest(unittest.TestCase):
-    def setUp(self):
-        self.block = Block()
-
-    def test(self):
-        print(str(self.block))
+    def CreateChain(self):
+        chain = Blockchain()
+        block = Block()
         self.assertTrue(True)
 
 
