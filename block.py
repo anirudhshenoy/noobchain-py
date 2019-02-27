@@ -21,7 +21,7 @@ class Block:
 
     def create_genesis_block(self, previous_hash='0', difficulty=1):
         self.previous_hash = previous_hash
-        self.height = 0
+        self.height = 1
         self.difficulty = difficulty
         self.block_hash = self.calculate_hash()
         self._mine_block()

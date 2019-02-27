@@ -68,9 +68,24 @@ class Blockchain:
             return True
         return False
 
-    def get_best_block(self):
-        return json.loads(self.chain[len(self.chain)-1:][0])
+    def get_block_from_height(self, height):
+        """
+        Search for block matching 'height'
+        Returns: Block if exists, false if not
+        Args: Height(int)
+        """
+        try:
+            block = json.loads(self.chain[height-1])
+        except:
+            print('Index out of bounds')
+            return False
+        return block
 
+    def get_best_block(self):
+        try:
+            return json.loads(self.chain[len(self.chain)-1:][0])
+        except IndexError:
+            raise IndexError('Genesis Block does not exist')
 
 if __name__ == '__main__':
     chain = Blockchain()
@@ -79,4 +94,4 @@ if __name__ == '__main__':
     for i in range(100):
         chain.generate_block_and_push()
         pprint(chain.get_best_block())
-        time.sleep(1)
+    print(chain.get_block_from_height(2001))
