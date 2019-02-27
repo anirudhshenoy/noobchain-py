@@ -61,7 +61,7 @@ class Block:
         return int(hash[:difficulty], 16) == 0
 
     def generate_next_block(self, previous_hash, height, difficulty):
-        self.previous_hash = previous_hash,
+        self.previous_hash = previous_hash
         self.difficulty = difficulty
         self.height = height
         self.block_hash = self.calculate_hash()
