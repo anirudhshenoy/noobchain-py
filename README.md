@@ -68,3 +68,13 @@ iii) _is_valid_block_hash
     Check whether block_hash received is consistent with block (content + difficulty)
     Args: instance of current block
     Returns: Boolean      
+
+iv) get_difficulty
+    Adjusts the difficulty at _DIFFICULTY_ADJUSTMENT_INTERVAL based on _BLOCK_INTERVAL_TIME
+    Args: None
+    Returns: Difficulty value for next block
+
+v) get_cummulative_difficulty
+    Get chain difficulty
+    Args: None 
+    Returns: cummulative difficulty

@@ -11,6 +11,8 @@ class Blockchain:
 
     def __init__(self, chain=[]):
         self.chain = chain
+        self._BLOCK_INTERVAL_TIME_SECS = 30
+        self._DIFFICULTY_ADJUSTMENT_INTERVAL = 10
 
     def _is_valid_block_structure(self, block):
         return (type(block.previous_hash) == str and
@@ -61,7 +63,7 @@ class Blockchain:
         new_block.generate_next_block(
             previous_block['block_hash'],
             previous_block['height']+1,
-            previous_block['difficulty'],
+            self.get_difficulty(),
         )
         if(self.is_valid_block(new_block, previous_block)):
             self.chain.append(str(new_block))
@@ -81,17 +83,55 @@ class Blockchain:
             return False
         return block
 
+    def __len__(self):
+        return len(self.chain)
+
+    def __repr__(self):
+        return str(self.chain)
+
     def get_best_block(self):
         try:
             return json.loads(self.chain[len(self.chain)-1:][0])
         except IndexError:
             raise IndexError('Genesis Block does not exist')
 
+    def get_difficulty(self):
+        """
+        Adjusts the difficulty at _DIFFICULTY_ADJUSTMENT_INTERVAL based on 
+        _BLOCK_INTERVAL_TIME
+        Args: None
+        Returns: Difficulty value for next block
+        """
+        best_block = self.get_best_block()
+        # New interval, check whether we need to adjust difficulty
+        if(best_block['height'] % self._DIFFICULTY_ADJUSTMENT_INTERVAL == 0):
+            expected_time_interval = self._BLOCK_INTERVAL_TIME_SECS * \
+                self._DIFFICULTY_ADJUSTMENT_INTERVAL
+            previous_adjusted_timestamp = self.get_block_from_height(
+                best_block['height']-self._DIFFICULTY_ADJUSTMENT_INTERVAL)['timestamp']
+            actual_time_interval = best_block[
+                'timestamp'] - previous_adjusted_timestamp
+
+            if(expected_time_interval < actual_time_interval*2):
+                return best_block['difficulty'] - 1
+            elif(expected_time_interval >= actual_time_interval/2):
+                return best_block['difficulty'] + 1
+        else:
+            return best_block['difficulty']
+
+    def get_cummulative_difficulty(self):
+        cummulative_difficulty = 0
+        for i in range(len(self.chain)):
+            block_difficulty = self.get_block_from_height(i)['difficulty']
+            cummulative_difficulty += 2**block_difficulty
+        return cummulative_difficulty
+
 if __name__ == '__main__':
     chain = Blockchain()
     chain.push_genesis_block('helloWorld', 2)
 
-    for i in range(100):
+    for i in range(99):
         chain.generate_block_and_push()
-        pprint(chain.get_best_block())
-    print(chain.get_block_from_height(2001))
+        # pprint(chain.get_best_block())
+    # print(chain.get_block_from_height(1))
+    print(chain.get_difficulty())
