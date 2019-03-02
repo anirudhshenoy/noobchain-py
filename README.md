@@ -79,3 +79,74 @@
     * Get chain difficulty
     * Args: None 
     * Returns: cummulative difficulty
+
+# Transactions
+
+## TxIn
+    * TxOutId (str)  --> which previous transaction is this In referring to
+    * TxOutIndex (int) --> which output in particular
+    * signature --> signature to unlock the UTXO
+
+## TxOut
+    * Address (str) --> pay to which address
+    * Amount (int) --> how much 
+
+## Transaction
+    * Id (str) --> transaction hash
+    * TxIns [] --> list of TxIn instances
+    * TxOuts [] --> list of TxOut instances
+
+ ### Methods
+    * _get_transaction_id (self):
+        Stringify contents of TxOut and TxIn (without signatures) and hash with SHA256
+        Returns: SHA256 Hash
+
+    * sign_input_tx 
+        For all txIns, check if a corresponding UTXO exists in the pool. If yes, sign the TxId of the transaction using the private key 
+
+## UTXO
+    * TxOutId (str)
+    * TxOutIndex (int)
+    * address ()
+    * amount (int)
+
+
+## Methods for Transactions 
+
+* update_utxo
+    * goes through all waiting transaction:
+        * if input of a transaction is currently in UTXO pool, remove it from the pool
+        * add all new new transaction outputs to UTXO pool
+        
+    Args: waiting_transactions [], UTXO_pool []  
+    Returns: Updated UTXO_pool
+
+* validate_transaction
+    * Check if each transaction: 
+        * has valid strcuture
+        * all TxIns reference a valid UTXO
+        * transaction hash matches ID 
+        * TxOutValues matches TxInValues 
+
+    Args: Transaction instance, UTXO_pool
+    Returns: True/False
+
+* validate_coinbase_transaction
+    * Check if coinbase transaction: 
+        * hash matches TxId
+        * contains exactly one TxIn
+        * the TxOut Index of the only TxIn must equal the block height 
+
+    Args: Transaction instance, block_height
+    Returns: True/False
+
+* generate_coinbase_transaction:
+    * create new instance of transaction with exactly one input and one output
+    * the one input contains the block height as the TXOutId
+
+    Args: block_height, address to transfer coinbase amount
+# To-Do 
+
+* add UTXO_pool list to chain
+* add waiting_transactions to chain 
+* update_UTXO 

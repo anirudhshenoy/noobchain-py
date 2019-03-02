@@ -32,7 +32,6 @@ class BlockTest(unittest.TestCase):
         self.assertEqual(len(self.chain), 3)
 
     def test_f_get_chain_difficulty(self):
-        print(len(self.chain))
         self.assertEqual(self.chain.get_cummulative_difficulty(), 12)
 
 if __name__ == '__main__':
