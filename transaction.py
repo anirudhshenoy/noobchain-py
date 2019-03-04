@@ -1,5 +1,7 @@
 from Crypto.Hash import SHA256
 import ecdsa as ec
+import json
+import pprint
 
 
 class TxIn:
@@ -8,11 +10,26 @@ class TxIn:
         self.tx_out_index = out_index
         self.signature = None
 
+    def get_json(self):
+        tx_in_object = {
+            'tx_out_id': self.tx_out_id,
+            'tx_out_index': self.tx_out_index,
+            'signature': self.signature
+        }
+        return tx_in_object
+
 
 class TxOut:
     def __init__(self, address, amount):
         self.address = address
         self.amount = amount
+
+    def get_json(self):
+        tx_out_object = {
+            'address': self.address,
+            'amount': self.amount
+        }
+        return tx_out_object
 
 
 class Transaction:
@@ -20,6 +37,23 @@ class Transaction:
         self.id = None
         self.tx_ins = []
         self.tx_outs = []
+
+    def get_json(self):
+        vin = []
+        vout = []
+        for tx_in in self.tx_ins:
+            vin.append(tx_in.get_json())
+        for tx_out in self.tx_outs:
+            vout.append(tx_out.get_json())
+        transaction_json = {
+            'id': self.id,
+            'vin': vin,
+            'vout': vout
+        }
+        return transaction_json
+
+    def __str__(self):
+        return json.dumps(self.get_json())
 
     def push_tx_in(self, out_id, out_index):
         tx_in = TxIn(out_id, out_index)
@@ -34,7 +68,7 @@ class Transaction:
             # if(find_utxo(UTXO_pool, tx_in)):
             signing_key = ec.SigningKey.from_string(
                 bytes().fromhex(private_key), curve=ec.SECP256k1)
-            tx_in.signature = signing_key.sign(self.id.encode('utf-8'))
+            tx_in.signature = signing_key.sign(self.id.encode('utf-8')).hex()
 
 
 class UTXO:
@@ -94,7 +128,7 @@ def get_transaction_id(transaction):
     return SHA256.new(tx_content.encode('utf-8')).hexdigest()
 
 
-def generate_coinbase_transaction(self, block_height, address):
+def generate_coinbase_transaction(block_height, address):
     _COINBASE_AMOUNT = 50
     coinbase_tx = Transaction()
     coinbase_tx.push_tx_in('', block_height)
@@ -110,4 +144,5 @@ if __name__ == '__main__':
     print(t.id)
     private_key = ec.SigningKey.generate(curve=ec.SECP256k1).to_string().hex()
     t.sign_input_txs(private_key)
-    print(t.tx_ins[0].signature.hex())
+    print(t.tx_ins[0].signature)
+    print(str(t))

@@ -2,6 +2,9 @@ from block import Block
 import json
 from pprint import pprint
 import time
+import transaction
+
+COINBASE_ADDRESS = '3050725eefae64bb5274a4c338271cedb456766d6bae3a8431ccc30f23b25a11'
 
 
 class Blockchain:
@@ -10,6 +13,8 @@ class Blockchain:
     """
 
     def __init__(self, chain=[]):
+        self.waiting_transactions = []
+        self.UTXO_pool = []
         self.chain = chain
         self._BLOCK_INTERVAL_TIME_SECS = 30
         self._DIFFICULTY_ADJUSTMENT_INTERVAL = 10
@@ -47,8 +52,11 @@ class Blockchain:
         if(len(self.chain)):
             print('Genesis block already exists')
             return False
+        self.waiting_transactions.append(
+            transaction.generate_coinbase_transaction(1, COINBASE_ADDRESS))
         genesis_block = Block()
-        genesis_block.create_genesis_block(previous_hash, difficulty)
+        genesis_block.create_genesis_block(
+            self.waiting_transactions[0].get_json(), previous_hash, difficulty)
         self.chain.append(str(genesis_block))
         return True
 
@@ -126,12 +134,13 @@ class Blockchain:
             cummulative_difficulty += 2**block_difficulty
         return cummulative_difficulty
 
+
 if __name__ == '__main__':
     chain = Blockchain()
     chain.push_genesis_block('helloWorld', 2)
-
-    for i in range(99):
-        chain.generate_block_and_push()
+    print(str(chain))
+    #for i in range(99):
+    #    chain.generate_block_and_push()
         # pprint(chain.get_best_block())
     # print(chain.get_block_from_height(1))
-    print(chain.get_difficulty())
+    #print(chain.get_difficulty())

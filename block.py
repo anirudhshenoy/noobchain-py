@@ -9,20 +9,21 @@ class Block:
     block
     """
 
-    def __init__(self, block_hash='0', previous_hash='0', height=0,
+    def __init__(self, data=[], block_hash='0', previous_hash='0', height=0,
                  difficulty=0, nonce=0):
         self.previous_hash = previous_hash
         self.height = height
         self.difficulty = difficulty
         self.nonce = nonce
         self.timestamp = round(time())
-        self.data = []
+        self.data = data
         self.block_hash = block_hash
 
-    def create_genesis_block(self, previous_hash='0', difficulty=1):
+    def create_genesis_block(self, data=[], previous_hash='0', difficulty=1):
         self.previous_hash = previous_hash
         self.height = 1
         self.difficulty = difficulty
+        self.data = data
         self.block_hash = self.calculate_hash()
         self._mine_block()
 
