@@ -1,6 +1,7 @@
 from Crypto.Hash import SHA256
 from time import time
 import json
+import transaction
 
 
 class Block:
@@ -38,10 +39,13 @@ class Block:
         return block_header_json
 
     def _get_block_json(self):
+        data_json = []
+        for i in range(len(self.data)):
+            data_json.append(self.data[i].get_json())
         block_json = self._get_block_header()
         block_json.update({
             'block_hash': self.block_hash,
-            'data': self.data,
+            'data': data_json,
         })
         return block_json
 
@@ -61,10 +65,11 @@ class Block:
     def _has_proof_of_work(self, difficulty, hash):
         return int(hash[:difficulty], 16) == 0
 
-    def generate_next_block(self, previous_hash, height, difficulty):
+    def generate_next_block(self, data, previous_hash, height, difficulty):
         self.previous_hash = previous_hash
         self.difficulty = difficulty
         self.height = height
+        self.data = data
         self.block_hash = self.calculate_hash()
         self._mine_block()
 

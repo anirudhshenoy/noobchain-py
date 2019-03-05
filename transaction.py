@@ -3,6 +3,8 @@ import ecdsa as ec
 import json
 import pprint
 
+COINBASE_ADDRESS = '3050725eefae64bb5274a4c338271cedb456766d6bae3a8431ccc30f23b25a11'
+
 
 class TxIn:
     def __init__(self, out_id, out_index):
@@ -34,9 +36,9 @@ class TxOut:
 
 class Transaction:
     def __init__(self):
-        self.id = None
         self.tx_ins = []
         self.tx_outs = []
+        self.id = None
 
     def get_json(self):
         vin = []
@@ -52,6 +54,9 @@ class Transaction:
         }
         return transaction_json
 
+    def generate_tx_hash(self):
+        self.id = get_transaction_id(self)
+
     def __str__(self):
         return json.dumps(self.get_json())
 
@@ -65,10 +70,11 @@ class Transaction:
 
     def sign_input_txs(self, private_key, UTXO_pool=[]):
         for tx_in in self.tx_ins:
-            # if(find_utxo(UTXO_pool, tx_in)):
-            signing_key = ec.SigningKey.from_string(
-                bytes().fromhex(private_key), curve=ec.SECP256k1)
-            tx_in.signature = signing_key.sign(self.id.encode('utf-8')).hex()
+            if(find_utxo(UTXO_pool, tx_in)):
+                signing_key = ec.SigningKey.from_string(
+                    bytes().fromhex(private_key), curve=ec.SECP256k1)
+                tx_in.signature = signing_key.sign(
+                    self.id.encode('utf-8')).hex()
 
 
 class UTXO:
@@ -81,14 +87,16 @@ class UTXO:
 
 def find_UTXO(UTXO_pool, tx_in):
     for utxo in UTXO_pool:
-        if (tx_in.id == utxo.tx_out_id):
+        if (tx_in.tx_out_id == utxo.tx_out_id):
             return utxo
     return False
 
 
 def validate_transaction(transaction, UTXO_pool):
-    tx_in_values, tx_out_values = 0
+    tx_in_values = 0
+    tx_out_values = 0
     for tx_in in transaction.tx_ins:
+        print(tx_in.tx_out_id)
         utxo = find_UTXO(UTXO_pool, tx_in)
         if(type(tx_in.tx_out_id) != str and
            type(tx_in.tx_out_index) != int and
@@ -111,7 +119,7 @@ def validate_transaction(transaction, UTXO_pool):
 def validate_coinbase_transaction(transaction, block_height):
     if(len(transaction.tx_ins) != 1):
         return False
-    if(get_transaction_id(transaction != transaction.id)):
+    if(get_transaction_id(transaction) != transaction.id):
         return False
     if(transaction.tx_ins[0].tx_out_index != block_height):
         return False

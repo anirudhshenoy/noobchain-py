@@ -2,9 +2,9 @@ from block import Block
 import json
 from pprint import pprint
 import time
-import transaction
+import transaction as tx
 
-COINBASE_ADDRESS = '3050725eefae64bb5274a4c338271cedb456766d6bae3a8431ccc30f23b25a11'
+COINBASE_ADDRESS = 'a2123f123123ag'
 
 
 class Blockchain:
@@ -48,15 +48,54 @@ class Blockchain:
             return False
         return True
 
+    def _update_UTXO(self, height):
+        """
+        Iterate through all transactions in waiting_transactions and update 
+        UTXO_pool
+        """
+        for transaction in self.waiting_transactions:
+            for tx_in in transaction.tx_ins:
+                for i in range(len(self.UTXO_pool)):
+                    if(self.UTXO_pool[i].tx_out_id == tx_in.tx_out_id):
+                        del self.UTXO_pool[i]
+            for idx, tx_out in enumerate(transaction.tx_outs):
+                new_utxo = tx.UTXO(transaction.id, idx,
+                                   tx_out.address, tx_out.amount)
+                self.UTXO_pool.append(new_utxo)
+        self.waiting_transactions = []
+
+    def add_transaction(self, transaction):
+        """
+        Adds the transaction to waiting_transactions list
+        Returns: True if transaction has been added to waiting_transaction
+        """
+        if(tx.validate_transaction(transaction, self.UTXO_pool)):
+            self.waiting_transactions.append(transaction)
+            return True
+        return False
+
+    def _generate_coinbase_transaction(self, height):
+        """
+        Generates a coinbase transaction and adds to waiting_transactions
+        """
+        coinbase_transaction = tx.generate_coinbase_transaction(
+            height, COINBASE_ADDRESS)
+        coinbase_transaction.generate_tx_hash()
+        if(tx.validate_coinbase_transaction(coinbase_transaction, height)):
+            self.waiting_transactions.insert(0, coinbase_transaction)
+
     def push_genesis_block(self, previous_hash, difficulty):
+        """
+        Generate the genesis block
+        """
         if(len(self.chain)):
             print('Genesis block already exists')
             return False
-        self.waiting_transactions.append(
-            transaction.generate_coinbase_transaction(1, COINBASE_ADDRESS))
         genesis_block = Block()
+        self._generate_coinbase_transaction(1)
         genesis_block.create_genesis_block(
-            self.waiting_transactions[0].get_json(), previous_hash, difficulty)
+            self.waiting_transactions, previous_hash, difficulty)
+        self._update_UTXO(1)
         self.chain.append(str(genesis_block))
         return True
 
@@ -68,13 +107,16 @@ class Blockchain:
         """
         new_block = Block()
         previous_block = self.get_best_block()
+        self._generate_coinbase_transaction(previous_block['height']+1)
         new_block.generate_next_block(
+            self.waiting_transactions,
             previous_block['block_hash'],
             previous_block['height']+1,
             self.get_difficulty(),
         )
         if(self.is_valid_block(new_block, previous_block)):
             self.chain.append(str(new_block))
+            self._update_UTXO(previous_block['height']+1)
             return True
         return False
 
@@ -139,8 +181,8 @@ if __name__ == '__main__':
     chain = Blockchain()
     chain.push_genesis_block('helloWorld', 2)
     print(str(chain))
-    #for i in range(99):
+    # for i in range(99):
     #    chain.generate_block_and_push()
-        # pprint(chain.get_best_block())
+    # pprint(chain.get_best_block())
     # print(chain.get_block_from_height(1))
-    #print(chain.get_difficulty())
+    # print(chain.get_difficulty())
