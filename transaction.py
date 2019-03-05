@@ -70,7 +70,7 @@ class Transaction:
 
     def sign_input_txs(self, private_key, UTXO_pool=[]):
         for tx_in in self.tx_ins:
-            if(find_utxo(UTXO_pool, tx_in)):
+            if(find_UTXO(UTXO_pool, tx_in)):
                 signing_key = ec.SigningKey.from_string(
                     bytes().fromhex(private_key), curve=ec.SECP256k1)
                 tx_in.signature = signing_key.sign(
@@ -78,8 +78,8 @@ class Transaction:
 
 
 class UTXO:
-    def __init__(self, tx_out_id, tx_out_index, address, amount):
-        self.tx_out_id = tx_out_id
+    def __init__(self, tx_id, tx_out_index, address, amount):
+        self.tx_id = tx_id
         self.tx_out_index = tx_out_index
         self.address = address
         self.amount = amount
@@ -87,7 +87,7 @@ class UTXO:
 
 def find_UTXO(UTXO_pool, tx_in):
     for utxo in UTXO_pool:
-        if (tx_in.tx_out_id == utxo.tx_out_id):
+        if (tx_in.tx_out_id == utxo.tx_id):
             return utxo
     return False
 
@@ -96,7 +96,6 @@ def validate_transaction(transaction, UTXO_pool):
     tx_in_values = 0
     tx_out_values = 0
     for tx_in in transaction.tx_ins:
-        print(tx_in.tx_out_id)
         utxo = find_UTXO(UTXO_pool, tx_in)
         if(type(tx_in.tx_out_id) != str and
            type(tx_in.tx_out_index) != int and

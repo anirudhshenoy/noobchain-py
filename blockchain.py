@@ -56,7 +56,7 @@ class Blockchain:
         for transaction in self.waiting_transactions:
             for tx_in in transaction.tx_ins:
                 for i in range(len(self.UTXO_pool)):
-                    if(self.UTXO_pool[i].tx_out_id == tx_in.tx_out_id):
+                    if(self.UTXO_pool[i].tx_id == tx_in.tx_out_id):
                         del self.UTXO_pool[i]
             for idx, tx_out in enumerate(transaction.tx_outs):
                 new_utxo = tx.UTXO(transaction.id, idx,
