@@ -64,6 +64,9 @@ class Blockchain:
                 self.UTXO_pool.append(new_utxo)
         self.waiting_transactions = []
 
+    def get_UTXO(self):
+        return self.UTXO_pool
+
     def add_transaction(self, transaction):
         """
         Adds the transaction to waiting_transactions list
@@ -170,6 +173,10 @@ class Blockchain:
             return best_block['difficulty']
 
     def get_cummulative_difficulty(self):
+        """
+        Get cummulative difficulty of all blocks 
+
+        """
         cummulative_difficulty = 0
         for i in range(len(self.chain)):
             block_difficulty = self.get_block_from_height(i)['difficulty']
