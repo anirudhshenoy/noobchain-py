@@ -84,6 +84,15 @@ class UTXO:
         self.address = address
         self.amount = amount
 
+    def get_json(self):
+        json_object = {
+            'tx_id': self.tx_id,
+            'tx_out_index': self.tx_out_index,
+            'address': self.address,
+            'amount': self.amount
+        }
+        return json_object
+
 
 def find_UTXO(UTXO_pool, tx_in):
     for utxo in UTXO_pool:
