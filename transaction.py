@@ -3,8 +3,6 @@ import ecdsa as ec
 import json
 import pprint
 
-COINBASE_ADDRESS = '3050725eefae64bb5274a4c338271cedb456766d6bae3a8431ccc30f23b25a11'
-
 
 class TxIn:
     def __init__(self, out_id, out_index):
@@ -101,6 +99,18 @@ def find_UTXO(UTXO_pool, tx_in):
     return False
 
 
+def verify_signature(signature, public_key, tx_id):
+    verifying_key = ec.VerifyingKey.from_string(
+        bytes().fromhex(public_key), curve=ec.SECP256k1)
+    try:
+        check = verifying_key.verify(
+            bytes().fromhex(signature), tx_id.encode('utf-8'))
+    except:
+        check = False
+    finally:
+        return check
+
+
 def validate_transaction(transaction, UTXO_pool):
     tx_in_values = 0
     tx_out_values = 0
@@ -110,6 +120,8 @@ def validate_transaction(transaction, UTXO_pool):
            type(tx_in.tx_out_index) != int and
            type(tx_in.signature) != str and
            utxo):
+            return False
+        if(not verify_signature(tx_in.signature, utxo.address, transaction.id)):
             return False
         tx_in_values += utxo.amount
     for tx_out in transaction.tx_outs:

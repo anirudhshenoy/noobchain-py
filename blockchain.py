@@ -4,7 +4,7 @@ from pprint import pprint
 import time
 import transaction as tx
 
-private_key = 799bbb0994f25b0596d10b3414471ddcf4da38e41ace54cfba2983e23ec26e99
+#private_key = 799bbb0994f25b0596d10b3414471ddcf4da38e41ace54cfba2983e23ec26e99
 
 COINBASE_ADDRESS = '18757434a5835fcf7fdbf8ef8a7c05396a3ff41764b04a00740143823f793d3c5f3b192899e8cf76ac6bb85a6e8fe27bcd6137fe86236851dbc27ea2dd357e8e'
 
@@ -195,6 +195,7 @@ if __name__ == '__main__':
     for i in range(9):
         chain.generate_block_and_push()
     # pprint(chain.get_best_block())
-    utxo = chain.get_UTXO()[0]
+    utxo = chain.get_UTXO_json()[0]
+    pass
     # print(chain.get_block_from_height(1))
     # print(chain.get_difficulty())

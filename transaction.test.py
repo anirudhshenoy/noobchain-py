@@ -67,28 +67,61 @@ class TransactionTest(unittest.TestCase):
         assert verifying_key.verify(
             bytes().fromhex(signature), t.id.encode('utf-8'))
 
+    def test_validate_transaction_verify_signature(self):
+        private_key = ec.SigningKey.generate(
+            curve=ec.SECP256k1).to_string().hex()
+        signing_key = ec.SigningKey.from_string(
+            bytes().fromhex(private_key), curve=ec.SECP256k1)
+        t = tx.Transaction()
+        t.push_tx_in('transaction_id', 10)
+        t.push_tx_out('222222', 39)
+        t.id = tx.get_transaction_id(t)
+        verifying_key = signing_key.get_verifying_key().to_string().hex()
+        u = tx.UTXO('transaction_id', 0, verifying_key, 39)
+        t.sign_input_txs(private_key, [u])
+        self.assertTrue(tx.verify_signature(
+            t.tx_ins[0].signature, u.address, t.id))
+
     def test_validate_transaction(self):
+        private_key = ec.SigningKey.generate(
+            curve=ec.SECP256k1).to_string().hex()
+        signing_key = ec.SigningKey.from_string(
+            bytes().fromhex(private_key), curve=ec.SECP256k1)
+        verifying_key = signing_key.get_verifying_key().to_string().hex()
         t = tx.Transaction()
         t.push_tx_in('111111', 10)
         t.push_tx_out('222222', 39)
         t.id = tx.get_transaction_id(t)
-        u = tx.UTXO('111111', 0, '22', 39)
+        u = tx.UTXO('111111', 0, verifying_key, 39)
+        t.sign_input_txs(private_key, [u])
         self.assertTrue(tx.validate_transaction(t, [u]))
 
     def test_validate_transaction_incorrect_in_out_amount(self):
+        private_key = ec.SigningKey.generate(
+            curve=ec.SECP256k1).to_string().hex()
+        signing_key = ec.SigningKey.from_string(
+            bytes().fromhex(private_key), curve=ec.SECP256k1)
+        verifying_key = signing_key.get_verifying_key().to_string().hex()
         t = tx.Transaction()
         t.push_tx_in('111111', 10)
         t.push_tx_out('222222', 39)
         t.id = tx.get_transaction_id(t)
-        u = tx.UTXO('111111', 0, '22', 10)
+        u = tx.UTXO('111111', 0, verifying_key, 10)
+        t.sign_input_txs(private_key, [u])
         self.assertFalse(tx.validate_transaction(t, [u]))
 
     def test_validate_transaction_incorrect_structure(self):
+        private_key = ec.SigningKey.generate(
+            curve=ec.SECP256k1).to_string().hex()
+        signing_key = ec.SigningKey.from_string(
+            bytes().fromhex(private_key), curve=ec.SECP256k1)
+        verifying_key = signing_key.get_verifying_key().to_string().hex()
         t = tx.Transaction()
         t.push_tx_in('111111', '10')
         t.push_tx_out('222222', 39)
         t.id = tx.get_transaction_id(t)
-        u = tx.UTXO('111111', 0, '22', 10)
+        u = tx.UTXO('111111', 0, verifying_key, 10)
+        t.sign_input_txs(private_key, [u])
         self.assertFalse(tx.validate_transaction(t, [u]))
 
 
