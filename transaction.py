@@ -116,10 +116,10 @@ def validate_transaction(transaction, UTXO_pool):
     tx_out_values = 0
     for tx_in in transaction.tx_ins:
         utxo = find_UTXO(UTXO_pool, tx_in)
-        if(type(tx_in.tx_out_id) != str and
-           type(tx_in.tx_out_index) != int and
-           type(tx_in.signature) != str and
-           utxo):
+        if((not utxo) and (
+           type(tx_in.tx_out_id) != str or
+           type(tx_in.tx_out_index) != int or
+           type(tx_in.signature) != str)):
             return False
         if(not verify_signature(tx_in.signature, utxo.address, transaction.id)):
             return False

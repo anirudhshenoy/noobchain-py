@@ -3,10 +3,11 @@ import json
 from pprint import pprint
 import time
 import transaction as tx
+import ecdsa as ec
 
-#private_key = 799bbb0994f25b0596d10b3414471ddcf4da38e41ace54cfba2983e23ec26e99
+# private_key = 799bbb0994f25b0596d10b3414471ddcf4da38e41ace54cfba2983e23ec26e99
 
-COINBASE_ADDRESS = '18757434a5835fcf7fdbf8ef8a7c05396a3ff41764b04a00740143823f793d3c5f3b192899e8cf76ac6bb85a6e8fe27bcd6137fe86236851dbc27ea2dd357e8e'
+COINBASE_ADDRESS = '1473d4597cfa0bdbbf5a7dc3ff51e7de14ded14bcc863c479e44c66a06308d475145ee8a0db11e35fd51efc797015f09a7499494980b70eb0e6253591620119a'
 
 
 class Blockchain:
@@ -52,14 +53,15 @@ class Blockchain:
 
     def _update_UTXO(self, height):
         """
-        Iterate through all transactions in waiting_transactions and update 
+        Iterate through all transactions in waiting_transactions and update
         UTXO_pool
         """
         for transaction in self.waiting_transactions:
             for tx_in in transaction.tx_ins:
                 for i in range(len(self.UTXO_pool)):
-                    if(self.UTXO_pool[i].tx_id == tx_in.tx_out_id):
-                        del self.UTXO_pool[i]
+                    #Delete UTXOs that have been spent
+                    self.UTXO_pool = [
+                        x for x in self.UTXO_pool if x.tx_id != tx_in.tx_out_id]
             for idx, tx_out in enumerate(transaction.tx_outs):
                 new_utxo = tx.UTXO(transaction.id, idx,
                                    tx_out.address, tx_out.amount)
@@ -155,7 +157,7 @@ class Blockchain:
 
     def get_difficulty(self):
         """
-        Adjusts the difficulty at _DIFFICULTY_ADJUSTMENT_INTERVAL based on 
+        Adjusts the difficulty at _DIFFICULTY_ADJUSTMENT_INTERVAL based on
         _BLOCK_INTERVAL_TIME
         Args: None
         Returns: Difficulty value for next block
@@ -179,7 +181,7 @@ class Blockchain:
 
     def get_cummulative_difficulty(self):
         """
-        Get cummulative difficulty of all blocks 
+        Get cummulative difficulty of all blocks
 
         """
         cummulative_difficulty = 0
@@ -189,13 +191,33 @@ class Blockchain:
         return cummulative_difficulty
 
 
+def print_balance(address):
+    utxo = chain.get_UTXO_json()
+    balance = 0
+    for tx in utxo:
+        if tx['address'] == address:
+            balance += tx['amount']
+    print(balance)
+
+
 if __name__ == '__main__':
     chain = Blockchain()
     chain.push_genesis_block('helloWorld', 2)
     for i in range(9):
         chain.generate_block_and_push()
     # pprint(chain.get_best_block())
-    utxo = chain.get_UTXO_json()[0]
-    pass
-    # print(chain.get_block_from_height(1))
-    # print(chain.get_difficulty())
+    # print(chain.get_UTXO_json())
+    t = tx.Transaction()
+    t.push_tx_in(
+        '335ce2fc05ae6df463065ceca34075a6a51acdbe0c36a2433ab3b2634f9727f4', 0)
+    t.push_tx_out('HelloBob', 50)
+    t.id = tx.get_transaction_id(t)
+    t.sign_input_txs(
+        '799bbb0994f25b0596d10b3414471ddcf4da38e41ace54cfba2983e23ec26e99', chain.UTXO_pool)
+    # print(t.get_json())
+    chain.add_transaction(t)
+    # print(chain.waiting_transactions)
+    chain.generate_block_and_push()
+    print(chain.get_UTXO_json())
+    print_balance('HelloBob')
+    print_balance(COINBASE_ADDRESS)
